@@ -12,7 +12,7 @@
 typedef struct sockaddr SockAddr;
 typedef struct sockaddr_in SockAddr_in;
 
-#define CONFIG "../ClientFiles/config.txt" // arquivo de configuracao
+#define CONFIG "ClientFiles/config.txt" // arquivo de configuracao
 
 /* -------------------------- funcoes de recebimento e envio de informacoes -------------------------- */
 
@@ -468,7 +468,7 @@ int main()
 	char user[7] = "Normal";        // valor (default)
 	char ip[16] = "127.0.0.1";      // valor (default)
 	int port = getConfig(ip,user);  // valor default é 9000
-	
+
 	SockAddr_in server;                             					// estrutura do socket
 	int socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); // cria file descriptor do socket TCP
 	
