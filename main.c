@@ -240,7 +240,12 @@ void comunicacao(int socketFD, char *perm)
     for (;;)
     {
     	memset(opt,'\0',20);
-      printMenu(1);
+
+      if(!strcmp(perm,"Admin"))
+        printMenu(1);
+      else
+        printMenu(0);
+
       printf("Escolha uma opção: ");
       gets(opt);
       printf("\n");
@@ -411,7 +416,7 @@ void comunicacao(int socketFD, char *perm)
   				// recebe resposta da operação
   				char res = '0';
   				read(socketFD, &res, 1);
-  				printResp(res,opt[0]);
+  				printResp(res,opt[0]-48);
   			}
   			else
   			{
