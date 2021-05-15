@@ -236,198 +236,197 @@ NoPerfilEmailNome *NPENrecebeTodos(int socketFD, int tam)
 void comunicacao(int socketFD, char *perm)
 {
     char opt[20];
-	
+
     for (;;)
     {
     	memset(opt,'\0',20);
-        printMenu(1);
-        printf("Escolha uma opção: ");
-        gets(opt);
-        printf("\n");
+      printMenu(1);
+      printf("Escolha uma opção: ");
+      gets(opt);
+      printf("\n");
 
-        write(socketFD, opt, 20); // envia opção escolhida ao servidor.
+      write(socketFD, opt, 20); // envia opção escolhida ao servidor.
 
-        if (opt[0] == '0')
-            break;
-        
-        if (opt[0] == '1' || opt[0] == '2')
+      if (opt[0] == '0')
+          break;
+
+      if (opt[0] == '1' || opt[0] == '2')
+      {
+          // le curso ou habilidade
+          char buffer[200];
+		memset(buffer,'\0',200);
+
+		if(opt[0] == '1')
+			printf("Digite o curso: ");
+		else
+			printf("digite a habilidade: ");
+
+		gets(buffer);
+		write(socketFD, buffer, 200); // envia habilidade ou curso ao servidor
+
+		// recebe tamanho da lista
+		char str[12];
+		read(socketFD, str, 12);
+
+          // recebe lista
+          NoPerfilEmailNome *lista = NPENrecebeTodos(socketFD, (int)strtol(str, NULL, 10));
+
+          printListaNomeEmail(lista); // imprime dados
+          NPENListFree(lista);        // libera memoria alocada
+      }
+      else if (opt[0] == '3')
+      {
+		// le curso ou habilidade
+		char buffer[200];
+		memset(buffer,'\0',200);
+
+		// le ano a ser filtrado
+		printf("digite o ano: ");
+		gets(buffer);
+
+          // envia ano a ser filtrado
+          write(socketFD, buffer, 12);
+
+          // recebe tamanho da lista
+		char str[12];
+          read(socketFD, str, 12);
+
+          // recebe lista
+          NoPerfilEmailNomeCurso *lista = NPENCrecebeTodos(socketFD, (int)strtol(str, NULL, 10));
+
+          printListaNomeEmailCurso(lista); // imprime dados
+          NPENCListFree(lista);            // libera memoria alocada
+      }
+      else if (opt[0] == '4')
+      {
+          NoPerfil *lista = recebeTodos(socketFD); // recebe todos os perfis
+          printListaPerfil(lista); 				 // imprime informacoes
+          perfilListFree(lista);   				 // libera memoria alocada
+      }
+      else if (opt[0] == '5')
+      {
+  			// le email para busca
+  			char buffer[200];
+  			memset(buffer,'\0',200);
+
+  			printf("Digite o email: ");
+  			gets(buffer);
+  			printf("\n");
+
+        // envia email ao servidor
+        write(socketFD, buffer, 200);
+
+        // le resposta do servidor, quanto a existencia do perfil
+        char res = 'e';
+        read(socketFD, &res, 1);
+        printResp(res,5);
+
+        if(res == '1')
         {
-            // le curso ou habilidade
-            char buffer[200];
-			memset(buffer,'\0',200);
-			
-			if(opt[0] == '1')
-				printf("Digite o curso: ");
-			else
-				printf("digite a habilidade: ");
-	
-			gets(buffer);
-			write(socketFD, buffer, 200); // envia habilidade ou curso ao servidor
-			
-			// recebe tamanho da lista
-			char str[12];
-			read(socketFD, str, 12);
-
-            // recebe lista
-            NoPerfilEmailNome *lista = NPENrecebeTodos(socketFD, (int)strtol(str, NULL, 10));
-
-            printListaNomeEmail(lista); // imprime dados
-            NPENListFree(lista);        // libera memoria alocada
+            Perfil *p = recebePerfil(socketFD); // recebe informacoes do perfil
+            printPerfil(p);						// imprime suas informacoes
+            freePerfil(p);						// libera memoria alocada
+            printf("\n");
         }
-        else if (opt[0] == '3')
-        {
-			// le curso ou habilidade
-			char buffer[200];
-			memset(buffer,'\0',200);
-			
-			// le ano a ser filtrado
-			printf("digite o ano: ");
-			gets(buffer);
+      }
+      else if(!strcmp(perm,"Admin"))
+	    {
+  			if (opt[0] == '6')
+  			{
+  				// le informacoes simples do perfil que vai ser adicionado
+  				char *infos[6], labels[6][23] = {"o email","o nome","o sobrenome","a cidade de residencia","a formacao","o ano de formatura"};
 
-            // envia ano a ser filtrado
-            write(socketFD, buffer, 12);
-            
-            // recebe tamanho da lista
-			char str[12];
-            read(socketFD, str, 12);
+  				for(int i=0; i<6; i++)
+  				{
+  					infos[i] = malloc(sizeof(char)*200);
+  					printf("Digite %s: ",labels[i]);
+  					gets(infos[i]);
+  				}
 
-            // recebe lista
-            NoPerfilEmailNomeCurso *lista = NPENCrecebeTodos(socketFD, (int)strtol(str, NULL, 10));
+  				// aloca memoria para os dados mais complexos
+  				NoString *auxexp = newStringList();
+  				NoString *auxhab = newStringList();
 
-            printListaNomeEmailCurso(lista); // imprime dados
-            NPENCListFree(lista);            // libera memoria alocada
-        }
-        else if (opt[0] == '4')
-        {
-            NoPerfil *lista = recebeTodos(socketFD); // recebe todos os perfis
-            printListaPerfil(lista); 				 // imprime informacoes
-            perfilListFree(lista);   				 // libera memoria alocada
-        }
-        else if (opt[0] == '5')
-        {
-			// le email para busca
-			char buffer[200];
-			memset(buffer,'\0',200);
-			
-			printf("Digite o email: ");
-			gets(buffer);
-			printf("\n");
-			
-            // envia email ao servidor
-            write(socketFD, buffer, 200);
+  				// leitura dos dados mais complexos
+  				char opt2[20];
+  				printf("Inserir habilidade (s) ou (n): ");
+  				gets(opt2);
 
-            // le resposta do servidor, quanto a existencia do perfil
-            char res = 'e';
-            read(socketFD, &res, 1);
-            printResp(res,5);
+  				while (!strcmp(opt2,"s"))
+  				{
+  					printf("Digite uma habilidade: ");
+  					char *exphab = malloc(sizeof(char)*100);
+  					gets(exphab);
+  					!existeString(exphab,auxhab) ? stringListInsert(auxhab,exphab) : free(exphab);
 
-            if(res == '1')
-            {
-                Perfil *p = recebePerfil(socketFD); // recebe informacoes do perfil
-                printPerfil(p);						// imprime suas informacoes
-                freePerfil(p);						// libera memoria alocada
-                printf("\n");
-            }
-        }
-        else if(!strcmp(perm,"Admin"))
-		{
-			if (opt[0] == '6')
-			{
-				// le informacoes simples do perfil que vai ser adicionado
-				char *infos[6], labels[6][23] = {"o email","o nome","o sobrenome","a cidade de residencia","a formacao","o ano de formatura"};
-				
-				for(int i=0; i<6; i++)
-				{
-					infos[i] = malloc(sizeof(char)*200);
-					printf("Digite %s: ",labels[i]);
-					gets(infos[i]);
-				}
-				
-				// aloca memoria para os dados mais complexos
-				NoString *auxexp = newStringList();
-				NoString *auxhab = newStringList();
-				
-				// Cria perfil, atribuindo dados e ponteiros
-				Perfil *p = createPerfil(infos[0],infos[1],infos[2],(int)strtol(infos[5],NULL,10),infos[3],infos[4],auxexp,auxhab);
-				
-				// leitura dos dados mais complexos
-				char opt2[20];
-				printf("Inserir habilidade (s) ou (n): ");
-				gets(opt2);
-				
-				while (!strcmp(opt2,"s"))
-				{
-					printf("Digite uma habilidade: ");
-					char *exphab = malloc(sizeof(char)*100);
-					gets(exphab);
-					!existeString(exphab,auxhab) ? stringListInsert(auxhab,exphab) : free(exphab);
-					
-					printf("Continuar inserindo habilidades (s) ou (n): ");
-					gets(opt2);
-				}
-				
-				printf("Inserir experiência (s) ou (n): ");
-				gets(opt2);
-				while (!strcmp(opt2,"s"))
-				{
-					printf("Digite uma experiência: ");
-					char *exphab = malloc(sizeof(char)*100);
-					gets(exphab);
-					!existeString(exphab,auxhab) ? stringListInsert(auxhab,exphab) : free(exphab);
-					
-					printf("Continuar inserindo experiência (s) ou (n): ");
-					gets(opt2);
-				}
-				
-				enviaPerfil(socketFD, p); 		// envia perfil
-				freePerfil(p);			  		// libera memoria utilizada
-				char res = '0';			  		// recebe flag do resultado da insercao
-				read(socketFD, &res, 1);	//
-				printResp(res,6);			//
-			}
-			else if(opt[0] == '7' || opt[0] == '8')
-			{
-				// le email do perfil que vai ser atualizado e a experiência à ser adicionada
-				char email[200], exp[200];
-				memset(email,'\0',200);
-				memset(exp,'\0',200);
-				printf("Digite o email: ");
-				gets(email);
-				
-				if(opt[0] == '7')
-				{
-					printf("Digite a experiencia: ");
-					gets(exp);
-					
-					// envia email e experiência ao servidor
-					write(socketFD, email, 200);
-					write(socketFD, exp, 200);
-				}
-				else if(opt[0] == '8')
-				{
-					// envia email ao servidor
-					write(socketFD, email, 200);
-				}
-				
-				// recebe resposta da operação
-				char res = '0';
-				read(socketFD, &res, 1);
-				printResp(res,opt[0]);
-			}
-			else
-			{
-				PRINTCL(CLLR,"Opção inválida.\n");
-			}
-		}
-        else
-		{
-        	PRINTCL(CLLR,"Opção inválida.\n");
-		}
-	
-		printf("Pressione uma tecla para continuar...");
-        getchar();
-        printf("\n");
-        system("clear");
+  					printf("Continuar inserindo habilidades (s) ou (n): ");
+  					gets(opt2);
+  				}
+
+  				printf("Inserir experiência (s) ou (n): ");
+  				gets(opt2);
+  				while (!strcmp(opt2,"s"))
+  				{
+  					printf("Digite uma experiência: ");
+  					char *exphab = malloc(sizeof(char)*100);
+  					gets(exphab);
+  					!existeString(exphab,auxexp) ? stringListInsert(auxexp,exphab) : free(exphab);
+
+  					printf("Continuar inserindo experiência (s) ou (n): ");
+  					gets(opt2);
+  				}
+
+          // Cria perfil, atribuindo dados e ponteiros
+  				Perfil *p = createPerfil(infos[0],infos[1],infos[2],(int)strtol(infos[5],NULL,10),infos[3],infos[4],auxexp,auxhab);
+  				enviaPerfil(socketFD, p); // envia perfil
+  				freePerfil(p);			  		// libera memoria utilizada
+  				char res = '0';			  		// recebe flag do resultado da insercao
+  				read(socketFD, &res, 1);	//
+  				printResp(res,6);			    //
+  			}
+  			else if(opt[0] == '7' || opt[0] == '8')
+  			{
+  				// le email do perfil que vai ser atualizado e a experiência à ser adicionada
+  				char email[200], exp[200];
+  				memset(email,'\0',200);
+  				memset(exp,'\0',200);
+  				printf("Digite o email: ");
+  				gets(email);
+
+  				if(opt[0] == '7')
+  				{
+  					printf("Digite a experiencia: ");
+  					gets(exp);
+
+  					// envia email e experiência ao servidor
+  					write(socketFD, email, 200);
+  					write(socketFD, exp, 200);
+  				}
+  				else if(opt[0] == '8')
+  				{
+  					// envia email ao servidor
+  					write(socketFD, email, 200);
+  				}
+
+  				// recebe resposta da operação
+  				char res = '0';
+  				read(socketFD, &res, 1);
+  				printResp(res,opt[0]);
+  			}
+  			else
+  			{
+  				PRINTCL(CLLR,"Opção inválida.\n");
+  			}
+	    }
+      else
+	    {
+      	PRINTCL(CLLR,"Opção inválida.\n");
+	    }
+
+	    printf("Pressione uma tecla para continuar...");
+      getchar();
+      printf("\n");
+      system("clear");
     }
 }
 
@@ -437,7 +436,7 @@ int getConfig(char *ip, char *user) // le ip, porta e tipo de usuario do arquivo
 	FILE *config = fopen(CONFIG,"r");
 	int port = 9000;
 	char str[12];
-	
+
 	if(config != NULL)
 	{
 		fscanf(config,"%s",user);
@@ -471,20 +470,20 @@ int main()
 
 	SockAddr_in server;                             					// estrutura do socket
 	int socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); // cria file descriptor do socket TCP
-	
+
 	if(socketFD == -1)
 		printConnStatus('E', ip);
-	
+
 	// atribui valores à estrutura do socket
 	server.sin_family = AF_INET;            // AF_INET é a familia de protocolos do IPV4
 	server.sin_addr.s_addr = inet_addr(ip); // ip da máquina executando o servidor
 	server.sin_port = htons(port);          // porta do servidor
-	
+
 	int conn = connect(socketFD, (SockAddr*)&server, sizeof(server));
-	
+
 	if(conn == -1)
 		printConnStatus('E', ip);
-	
+
 	printConnStatus('S', ip);
 	comunicacao(socketFD, user); // realiza troca de mensagem com o servidor
 	close(socketFD);             // encerra socket

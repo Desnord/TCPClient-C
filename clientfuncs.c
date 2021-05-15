@@ -92,13 +92,41 @@ void printListaNomeEmailCurso(NoPerfilEmailNomeCurso *lista)
 void printResp(char res, int op)
 {
     if(op == 5)
-        (res == '1') ? (PRINTCL(CLLG, "Perfil encontrado: \n\n")) : (PRINTCL(CLLR, "Não existe perfil cadastrado com o email informado. \n\n"));
+    {
+        if(res == '1')
+            PRINTCL(CLLG, "Perfil encontrado: \n\n");
+        else if(res == '0')
+            PRINTCL(CLLR, "Não existe perfil cadastrado com o email informado. \n\n");
+        else if(res == 'N')
+            PRINTCL(CLLR,"Erro ao receber dados. \n\n");
+    }
     else if(op == 6)
-        (res == '1') ? (PRINTCL(CLLG,"Perfil inserido com sucesso! \n\n")) : (PRINTCL(CLLR,"Esse email já está registrado.\n\n"));
+    {
+        if(res == '1')
+            PRINTCL(CLLG,"Perfil inserido com sucesso! \n\n");
+        else if(res == '0')
+            PRINTCL(CLLR,"Esse email já está registrado.\n\n");
+        else if(res == 'N')
+            PRINTCL(CLLR,"Erro ao receber confirmacao. \n\n");
+    }
     else if(op == 7)
-        (res == '2') ? (PRINTCL(CLLG,"Experiência adicionada com sucesso! \n\n")) : (PRINTCL(CLLR,"Experiência duplicada ou Perfil inexistente. \n\n"));
+    {
+        if(res == '2')
+            PRINTCL(CLLG,"Experiência adicionada com sucesso! \n\n");
+        else if(res == '0' || res == '1')
+            PRINTCL(CLLR,"Experiência duplicada ou Perfil inexistente. \n\n");
+        else if(res == 'N')
+            PRINTCL(CLLR,"Erro ao receber confirmacao. \n\n");
+    }
     else if(op == 8)
-        (res == '1') ? (PRINTCL(CLLG,"Perfil removido com sucesso! \n\n")) : (PRINTCL(CLLR,"Perfil informado inexistente. \n\n"));
+    {
+        if(res == '1')
+            PRINTCL(CLLG,"Perfil removido com sucesso! \n\n");
+        else if(res == '0')
+            PRINTCL(CLLR,"Perfil informado inexistente. \n\n");
+        else if(res == 'N')
+            PRINTCL(CLLR,"Erro ao receber confirmacao. \n\n");
+    }
 }
 void printMenu(int tipo)
 {
